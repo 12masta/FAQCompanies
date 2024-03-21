@@ -1,0 +1,81 @@
+@using FAQCompaniesChat.Services
+@using FAQCompaniesChat.Data
+
+@inject IJSRuntime JSRuntime
+@inject ChatService ChatService
+
+<div id="scrollbox">
+    @foreach (var item in _messages)
+    {
+        if (item.IsRequest) 
+        {
+            <div class="sent p-2 m-0 position-relative d-flex justify-content-end">
+                <p class="">@item.Body</p>
+            </div>
+        }
+        else 
+        {
+            <div class="received p-2 m-0 position-relative d-flex justify-content-start">
+                <p class="">@item.Body</p>
+            </div>
+        }
+    }
+</div>
+<hr />
+<button class="btn btn-primary" @onclick="@ClearChat">Clear Chat</button>
+
+
+<EditForm Model="chatinput" OnValidSubmit="SubmitChat">
+<textarea id="chattextarea" style="width: 500px; height: 80px;" @bind="@chatinput.Text" @oninput="@((ChangeEventArgs e) => updateTextArea(e))" />
+    <div>
+        <button type="submit">Submit</button>
+    </div>
+</EditForm>
+
+@code {
+
+    private ChatInput chatinput = new();
+    private List<Data.Message> _messages = new();
+    private async Task ClearChat() => _messages = new List<Message>();
+    private IJSObjectReference module;
+
+
+    private async Task SubmitChat()
+    {
+        Message tosend = new Message(chatinput.Text, true);
+        _messages.Add(tosend);
+        @* await JSRuntime.InvokeAsync<string>("UpdateScroll", "scrollbox"); *@
+
+        Message response = await ChatService.GetResponse(_messages);
+        _messages.Add(response);
+        @* await JSRuntime.InvokeAsync<string>("UpdateScroll", "scrollbox"); *@
+
+        chatinput.Text = "";
+    }
+
+
+    private void updateTextArea(ChangeEventArgs e)
+    {
+        chatinput.Text = e.Value!.ToString()!;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            @* module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./JSHelpers.js");
+            await module.InvokeAsync<string>("addSubmitOnEnter", "chattextarea"); *@
+        }
+    }
+
+    public class ChatInput
+    {
+        public ChatInput()
+        {
+            Text = "";
+        }
+        public string Text { get; set; }
+    }
+
+}
+
