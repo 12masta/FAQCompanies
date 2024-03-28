@@ -39,7 +39,6 @@
     private async Task ClearChat() => _messages = new List<Message>();
     private IJSObjectReference module;
 
-
     private async Task SubmitChat()
     {
         Message tosend = new Message(chatinput.Text, true);
