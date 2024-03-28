@@ -12,6 +12,13 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddSingleton<ChatService>();
 
+var isDevelopment = string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"), "development", StringComparison.InvariantCultureIgnoreCase);
+if (isDevelopment)
+{
+    builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("./Properties/appsettings.Secrets.json");
+}
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
