@@ -36,8 +36,7 @@
 
     private ChatInput chatinput = new();
     private List<Data.Message> _messages = new();
-    private async Task ClearChat() => _messages = new List<Message>();
-    private IJSObjectReference module;
+    private void ClearChat() => _messages = new List<Message>();
 
     private async Task SubmitChat()
     {
