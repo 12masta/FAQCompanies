@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using FAQCompaniesChat.Data;
 using FAQCompaniesChat.Hubs;
+using FAQCompaniesChat.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
+builder.Services.AddSingleton<ChatService>();
+
+var isDevelopment = string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"), "development", StringComparison.InvariantCultureIgnoreCase);
+if (isDevelopment)
+{
+    builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("./Properties/appsettings.Secrets.json");
+}
 
 var app = builder.Build();
 

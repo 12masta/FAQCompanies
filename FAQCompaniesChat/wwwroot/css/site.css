@@ -104,18 +104,6 @@ textarea {
     margin-right: 10%;
 }
 
-.sent:after {
-    border-left-color: #03a9f4;
-    border-right: 0;
-    right: -20px;
-}
-
-.received:after {
-    border-right-color: #4CAF50;
-    border-left: 0;
-    left: -20px;
-}
-
 /* div within bubble for name */
 .user {
     font-size: 0.8em;
