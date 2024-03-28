@@ -6,8 +6,8 @@ namespace FAQCompaniesChat.Services
     public class ChatService
     {
         private readonly IConfiguration _configuration;
-        DirectLineClient client;
-        Conversation conversation;
+        DirectLineClient? client;
+        Conversation? conversation;
 
         public ChatService(IConfiguration configuration)
         {
@@ -31,6 +31,11 @@ namespace FAQCompaniesChat.Services
                 Type = ActivityTypes.Message
             };
 
+            if(client is null || conversation is null) {
+                responseMessage = new Message("No response.", false);
+                return responseMessage;
+            }
+
             var postActivityResponse = await client.Conversations.PostActivityAsync(conversation.ConversationId, userMessage);
             var activitiesSet = await client.Conversations.GetActivitiesAsync(conversation.ConversationId);
             var botResponses = activitiesSet.Activities.Where(a => a.ReplyToId == postActivityResponse.Id);
@@ -45,7 +50,7 @@ namespace FAQCompaniesChat.Services
 
             if (responseMessage == null)
             {
-                responseMessage = new Message("Brak odpowiedzi.", false);
+                responseMessage = new Message("No response.", false);
             }
             return responseMessage;
         }     
