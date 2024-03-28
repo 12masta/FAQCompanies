@@ -1,57 +1,53 @@
-// using Azure;
-
-// using Azure.AI.OpenAI;
 using FAQCompaniesChat.Data;
+using Microsoft.Bot.Connector.DirectLine;
 
 namespace FAQCompaniesChat.Services
 {
     public class ChatService
     {
         private readonly IConfiguration _configuration;
-
+        DirectLineClient client;
+        Conversation conversation;
 
         public ChatService(IConfiguration configuration)
         {
             _configuration = configuration;
         }
-        public async Task<Message> GetResponse(List<Message> messagechain)
+
+        public async Task InitConversation()
         {
-            // string response = "";
-
-            // OpenAIClient client = new OpenAIClient(
-            //     new Uri(_configuration.GetSection("Azure")["OpenAIUrl"]!),
-            //     new AzureKeyCredential(_configuration.GetSection("Azure")["OpenAIKey"]!));
-
-
-            // ChatCompletionsOptions options = new ChatCompletionsOptions();
-            // options.Temperature = (float)0.7;
-            // options.MaxTokens = 800;
-            // options.NucleusSamplingFactor = (float)0.95;
-            // options.FrequencyPenalty = 0;
-            // options.PresencePenalty = 0;
-            // options.Messages.Add(new ChatMoessage(ChatRole.System,SystemMessage));
-            // foreach (var msg in messagechain)
-            // {
-            //     if (msg.IsRequest)
-            //     {
-            //         options.Messages.Add(new ChatMessage(ChatRole.User, msg.Body));
-            //     }
-            //     else
-            //     {
-            //         options.Messages.Add(new ChatMessage(ChatRole.Assistant, msg.Body));
-            //     }
-            // }
-
-            // Response<ChatCompletions> resp = await client.GetChatCompletionsAsync(
-            //     _configuration.GetSection("Azure")["OpenAIDeploymentModel"]!,
-            //     options);
-
-            // ChatCompletions completions = resp.Value;
-
-            // response = completions.Choices[0].Message.Content;
-            Message responseMessage = new Message("",false);
-            return responseMessage;
+            var chatSecret = _configuration.GetValue<string>("BotService:ChatSecret");
+            client = new DirectLineClient(chatSecret);
+            conversation = await client.Conversations.StartConversationAsync();
         }
-        
+
+        public async Task<Message> GetResponse(List<Message> messageChain)
+        {
+            Message? responseMessage = null;
+            Activity userMessage = new Activity
+            {
+                From = new ChannelAccount("DirectLineFaqCompanyUser"),
+                Text = messageChain.Last().Body,
+                Type = ActivityTypes.Message
+            };
+
+            var postActivityResponse = await client.Conversations.PostActivityAsync(conversation.ConversationId, userMessage);
+            var activitiesSet = await client.Conversations.GetActivitiesAsync(conversation.ConversationId);
+            var botResponses = activitiesSet.Activities.Where(a => a.ReplyToId == postActivityResponse.Id);
+
+            foreach (Activity activity in botResponses)
+            {
+                if (activity.Text != null)
+                {
+                    responseMessage = new Message(activity.Text, false);
+                }
+            }
+
+            if (responseMessage == null)
+            {
+                responseMessage = new Message("Brak odpowiedzi.", false);
+            }
+            return responseMessage;
+        }     
     }
 }

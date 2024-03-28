@@ -22,13 +22,13 @@
     }
 </div>
 <hr />
-<button class="btn btn-primary" @onclick="@ClearChat">Clear Chat</button>
 
 
 <EditForm Model="chatinput" OnValidSubmit="SubmitChat">
-<textarea id="chattextarea" style="width: 500px; height: 80px;" @bind="@chatinput.Text" @oninput="@((ChangeEventArgs e) => updateTextArea(e))" />
+<textarea id="chattextarea" @bind="@chatinput.Text" @oninput="@((ChangeEventArgs e) => UpdateTextArea(e))" />
     <div>
-        <button type="submit">Submit</button>
+        <button class="btn btn-secondary" @onclick="@ClearChat">Clear Chat</button>
+        <button class="btn btn-primary type="submit">Submit</button>
     </div>
 </EditForm>
 
@@ -44,17 +44,15 @@
     {
         Message tosend = new Message(chatinput.Text, true);
         _messages.Add(tosend);
-        @* await JSRuntime.InvokeAsync<string>("UpdateScroll", "scrollbox"); *@
 
         Message response = await ChatService.GetResponse(_messages);
         _messages.Add(response);
-        @* await JSRuntime.InvokeAsync<string>("UpdateScroll", "scrollbox"); *@
 
         chatinput.Text = "";
     }
 
 
-    private void updateTextArea(ChangeEventArgs e)
+    private void UpdateTextArea(ChangeEventArgs e)
     {
         chatinput.Text = e.Value!.ToString()!;
     }
@@ -63,8 +61,7 @@
     {
         if (firstRender)
         {
-            @* module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./JSHelpers.js");
-            await module.InvokeAsync<string>("addSubmitOnEnter", "chattextarea"); *@
+            await ChatService.InitConversation();
         }
     }
 
