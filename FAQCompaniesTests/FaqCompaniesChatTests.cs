@@ -1,10 +1,12 @@
+
+
 using System.Text.RegularExpressions;
 using Microsoft.Playwright.NUnit;
 
 namespace FaqCompanies.Tests;
 
 [TestFixture]
-public class BasicTests : PageTest
+public class FaqCompaniesChatTests : PageTest
 {
     private string _serverAddress;
 
